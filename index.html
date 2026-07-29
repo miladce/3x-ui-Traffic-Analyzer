@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Traffic Analytics</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>body{font-family:sans-serif;margin:2rem;background:#111;color:#eee}
+select{padding:.4rem;margin-bottom:1rem}</style>
+</head>
+<body>
+<h2>Client Traffic</h2>
+<select id="range">
+  <option value="hourly60">Hourly — past 60 hours</option>
+  <option value="daily7">Daily — past 7 days</option>
+  <option value="daily30">Daily — past 30 days</option>
+</select>
+<canvas id="chart" height="110"></canvas>
+<p style="opacity:.6">Click a name in the legend to show/hide that client.</p>
+<script>
+let chart;
+async function load() {
+  const r = await fetch('/api/data?range=' + document.getElementById('range').value);
+  const { labels, datasets } = await r.json();
+  datasets.forEach((d, i) => { d.borderColor = `hsl(${i * 47 % 360},70%,55%)`; d.fill = false; d.tension = .2; });
+  if (chart) chart.destroy();
+  chart = new Chart(document.getElementById('chart'), {
+    type: 'line',
+    data: { labels, datasets },
+    options: { responsive: true, scales: { y: { title: { display: true, text: 'GB' } } } }
+  });
+}
+document.getElementById('range').onchange = load;
+load();
+</script>
+</body>
+</html>
